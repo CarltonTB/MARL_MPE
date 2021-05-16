@@ -14,7 +14,8 @@ class DQNAgent:
     def __init__(self, epsilon, min_epsilon, decay_rate, learning_rate, tau, gamma, batch_size,
                  q_network, target_network, max_memory_length):
         self.experience_memory = deque(maxlen=max_memory_length)
-        self.prioritized_memory = PrioritizedReplayMemory(max_length=max_memory_length, alpha=0.6, beta=0.4)
+        self.prioritized_memory = PrioritizedReplayMemory(max_length=max_memory_length, alpha=0.6,
+                                                          beta=0.4, beta_annealing_steps=500000)
         self.last_observation = None
         self.last_action = None
         self.q_network = q_network
@@ -171,9 +172,15 @@ class AdversaryDQN(nn.Module):
 
     def __init__(self):
         super(AdversaryDQN, self).__init__()
-        self.fc1 = nn.Linear(8, 32)
-        self.fc2 = nn.Linear(32, 64)
-        self.fc3 = nn.Linear(64, 5)
+        # baseline
+        # self.fc1 = nn.Linear(8, 32)
+        # self.fc2 = nn.Linear(32, 64)
+        # self.fc3 = nn.Linear(64, 5)
+
+        # double nodes
+        self.fc1 = nn.Linear(8, 64)
+        self.fc2 = nn.Linear(64, 128)
+        self.fc3 = nn.Linear(128, 5)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -186,9 +193,15 @@ class AgentDQN(nn.Module):
 
     def __init__(self):
         super(AgentDQN, self).__init__()
-        self.fc1 = nn.Linear(10, 32)
-        self.fc2 = nn.Linear(32, 64)
-        self.fc3 = nn.Linear(64, 5)
+        # baseline
+        # self.fc1 = nn.Linear(10, 32)
+        # self.fc2 = nn.Linear(32, 64)
+        # self.fc3 = nn.Linear(64, 5)
+
+        # double nodes
+        self.fc1 = nn.Linear(10, 64)
+        self.fc2 = nn.Linear(64, 128)
+        self.fc3 = nn.Linear(128, 5)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
