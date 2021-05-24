@@ -38,6 +38,10 @@ def train_simple_adversary(agent_dict, episodes, load_from_checkpoint=False, pri
         for agent in env.agent_iter():
             agent_obj = agent_dict.get(agent)
             observation, reward, done, info = env.last()
+            # Tag observations with the agent index
+            if agent_obj.agent_index is not None:
+                observation = np.append(observation, [agent_obj.agent_index])
+
             action = agent_obj.policy(observation, done)
             env.step(action)
 
@@ -114,6 +118,10 @@ def test_simple_adversary(agent_dict, episodes, load_from_checkpoint=True, rende
         }
         for agent in env.agent_iter():
             observation, reward, done, info = env.last()
+            # Tag observations with the agent index
+            if agent_dict[agent].agent_index is not None:
+                observation = np.append(observation, [agent_dict[agent].agent_index])
+
             action = agent_dict.get(agent).policy(observation, done)
             env.step(action)
             episode_score_dict[agent] += reward
@@ -161,34 +169,34 @@ if __name__ == "__main__":
         "adversary_0": RandomAgent(),
     }
 
-    agent_q_net = AgentDQN()
-    agent_target_net = AgentDQN()
+    # agent_q_net = AgentDQN()
+    # agent_target_net = AgentDQN()
+    #
+    # agent_0 = DQNAgent(epsilon=1.0, min_epsilon=0.1, decay_rate=0.999,
+    #                    learning_rate=0.0001, gamma=0.99, batch_size=64,
+    #                    tau=0.001, q_network=agent_q_net, target_network=agent_target_net,
+    #                    max_memory_length=100000, agent_index=1)
+    #
+    # agent_1 = DQNAgent(epsilon=1.0, min_epsilon=0.1, decay_rate=0.999,
+    #                    learning_rate=0.0001, gamma=0.99, batch_size=64,
+    #                    tau=0.001, q_network=agent_q_net, target_network=agent_target_net,
+    #                    max_memory_length=100000, agent_index=2)
+
+    agent_0_q_net = AgentDQN()
+    agent_0_target_net = AgentDQN()
+
+    agent_1_q_net = AgentDQN()
+    agent_1_target_net = AgentDQN()
 
     agent_0 = DQNAgent(epsilon=1.0, min_epsilon=0.1, decay_rate=0.999,
                        learning_rate=0.0001, gamma=0.99, batch_size=64,
-                       tau=0.001, q_network=agent_q_net, target_network=agent_target_net,
+                       tau=0.001, q_network=agent_0_q_net, target_network=agent_0_target_net,
                        max_memory_length=100000)
 
     agent_1 = DQNAgent(epsilon=1.0, min_epsilon=0.1, decay_rate=0.999,
                        learning_rate=0.0001, gamma=0.99, batch_size=64,
-                       tau=0.001, q_network=agent_q_net, target_network=agent_target_net,
+                       tau=0.001, q_network=agent_1_q_net, target_network=agent_1_target_net,
                        max_memory_length=100000)
-
-    # agent_0_q_net = AgentDQN()
-    # agent_0_target_net = AgentDQN()
-    #
-    # agent_1_q_net = AgentDQN()
-    # agent_1_target_net = AgentDQN()
-
-    # agent_0 = DQNAgent(epsilon=1.0, min_epsilon=0.1, decay_rate=0.999,
-    #                    learning_rate=0.0001, gamma=0.99, batch_size=64,
-    #                    tau=0.001, q_network=agent_0_q_net, target_network=agent_0_target_net,
-    #                    max_memory_length=100000)
-    #
-    # agent_1 = DQNAgent(epsilon=1.0, min_epsilon=0.1, decay_rate=0.999,
-    #                    learning_rate=0.0001, gamma=0.99, batch_size=64,
-    #                    tau=0.001, q_network=agent_1_q_net, target_network=agent_1_target_net,
-    #                    max_memory_length=100000)
 
     adversary_0 = DQNAgent(epsilon=1.0, min_epsilon=0.1, decay_rate=0.999,
                            learning_rate=0.0001, gamma=0.99, batch_size=64,
@@ -199,13 +207,20 @@ if __name__ == "__main__":
         "agent_1": agent_1,
         "adversary_0": adversary_0,
     }
+
+    # train_simple_adversary(dqn_agent_dict, 5000, load_from_checkpoint=False, prioritized=True, run_name="agent_indication")
+    # test_simple_adversary(dqn_agent_dict, 1000, load_from_checkpoint=True, render=False, run_name="agent_indication")
+
+    # train_simple_adversary(dqn_agent_dict, 5000, load_from_checkpoint=False, prioritized=True, run_name="agent_indication_large_net")
+    # test_simple_adversary(dqn_agent_dict, 1000, load_from_checkpoint=True, render=False, run_name="agent_indication_large_net")
+
     # train_simple_adversary(dqn_agent_dict, 5000, load_from_checkpoint=False, prioritized=True, run_name="large_net_unique_params")
     # test_simple_adversary(dqn_agent_dict, 1000, load_from_checkpoint=True, render=False, run_name="large_net_unique_params")
 
     # train_simple_adversary(dqn_agent_dict, 5000, load_from_checkpoint=False, prioritized=True, run_name="large_net_shared_params")
     # test_simple_adversary(dqn_agent_dict, 1000, load_from_checkpoint=True, render=True, run_name="large_net_shared_params")
 
-    # test_simple_adversary(dqn_agent_dict, 1000, load_from_checkpoint=True, render=False, run_name="unique_params")
+    test_simple_adversary(dqn_agent_dict, 10000, load_from_checkpoint=True, render=True, run_name="unique_params")
     # test_simple_adversary(random_agent_dict, 100, load_from_checkpoint=False)
 
 

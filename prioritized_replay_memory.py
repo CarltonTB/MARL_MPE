@@ -96,3 +96,7 @@ if __name__ == "__main__":
     for i in range(test.beta_annealing_steps):
         print(test.beta)
         test.anneal_beta(i)
+    # x = np.zeros(5)
+    # print(x)
+    # x = np.append(x, [2])
+    # print(x)

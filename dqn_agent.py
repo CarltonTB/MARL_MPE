@@ -12,12 +12,13 @@ from transition_memory import TransitionMemory
 class DQNAgent:
 
     def __init__(self, epsilon, min_epsilon, decay_rate, learning_rate, tau, gamma, batch_size,
-                 q_network, target_network, max_memory_length):
+                 q_network, target_network, max_memory_length, agent_index=None):
         self.experience_memory = deque(maxlen=max_memory_length)
         self.prioritized_memory = PrioritizedReplayMemory(max_length=max_memory_length, alpha=0.6,
                                                           beta=0.4, beta_annealing_steps=500000)
         self.last_observation = None
         self.last_action = None
+        self.agent_index = agent_index
         self.q_network = q_network
         self.target_network = target_network
         # epsilon is the probability of taking a random action
@@ -52,6 +53,7 @@ class DQNAgent:
         otherwise take the action with the highest value given the current state (according to the Q-network)
         :return: Discrete action, int in range 0-4 inclusive
         """
+        observation = torch.tensor(observation, dtype=torch.float32)
         if done:
             return None
         elif random.random() <= self.epsilon:
@@ -60,7 +62,7 @@ class DQNAgent:
             # Feed forward the q network and take the action with highest q value
             self.q_network.eval()
             with torch.no_grad():
-                qs = self.q_network(torch.tensor(observation, dtype=torch.float32))
+                qs = self.q_network(observation)
                 action = np.argmax(qs.detach().numpy())
         self.q_network.train()
         return action
@@ -173,14 +175,14 @@ class AdversaryDQN(nn.Module):
     def __init__(self):
         super(AdversaryDQN, self).__init__()
         # baseline
-        # self.fc1 = nn.Linear(8, 32)
-        # self.fc2 = nn.Linear(32, 64)
-        # self.fc3 = nn.Linear(64, 5)
+        self.fc1 = nn.Linear(8, 32)
+        self.fc2 = nn.Linear(32, 64)
+        self.fc3 = nn.Linear(64, 5)
 
         # double nodes
-        self.fc1 = nn.Linear(8, 64)
-        self.fc2 = nn.Linear(64, 128)
-        self.fc3 = nn.Linear(128, 5)
+        # self.fc1 = nn.Linear(8, 64)
+        # self.fc2 = nn.Linear(64, 128)
+        # self.fc3 = nn.Linear(128, 5)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -194,14 +196,19 @@ class AgentDQN(nn.Module):
     def __init__(self):
         super(AgentDQN, self).__init__()
         # baseline
-        # self.fc1 = nn.Linear(10, 32)
-        # self.fc2 = nn.Linear(32, 64)
-        # self.fc3 = nn.Linear(64, 5)
+        # agent indication
+        # self.fc1 = nn.Linear(11, 32)
+
+        self.fc1 = nn.Linear(10, 32)
+        self.fc2 = nn.Linear(32, 64)
+        self.fc3 = nn.Linear(64, 5)
 
         # double nodes
-        self.fc1 = nn.Linear(10, 64)
-        self.fc2 = nn.Linear(64, 128)
-        self.fc3 = nn.Linear(128, 5)
+        # agent indication
+        # self.fc1 = nn.Linear(11, 64)
+        # self.fc1 = nn.Linear(10, 64)
+        # self.fc2 = nn.Linear(64, 128)
+        # self.fc3 = nn.Linear(128, 5)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
